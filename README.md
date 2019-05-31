@@ -16,9 +16,16 @@ It currently supports all released chapters with the exception of Console Arcs.
 
 Use [chocolatey](https://chocolatey.org/) on Windows or the package manager of your choice on Linux/Mac.
 
+## How to use
+
+Run ``py higurashi_make.py <chapterName>``
+
+Example: ``py higurashi_make.py onikakushi``
+
 ## TODO
 
 - Test this tool on Linux
 - Support console arcs releases
 - Mac support 
     - unlikely but feel free to fork and diy
+- Batch support
