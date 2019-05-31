@@ -11,7 +11,7 @@ It currently supports all released chapters with the exception of Console Arcs.
 > Note: these should be in your system $PATH to work.
 
 - Python 3.6 or newer
-- [7-Zip](https://www.7-zip.org/https://www.7-zip.org/)
+- [7-Zip](https://www.7-zip.org/)
 - [aria2](https://aria2.github.io/)
 
 Use [chocolatey](https://chocolatey.org/) on Windows or the package manager of your choice on Linux/Mac.
@@ -24,7 +24,7 @@ Example: ``py higurashi_make.py onikakushi``
 
 ## TODO
 
-- ~~Test this tool on Linux~~
+- ~~Test this tool on Linux~~ it works!
 - Support console arcs releases
 - Mac support 
     - unlikely but feel free to fork and diy
