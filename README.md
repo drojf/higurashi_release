@@ -6,7 +6,7 @@ create a zip file that can be extracted directly into the game folder or uploade
 
 It currently supports all released chapters with the exception of Console Arcs.
 
-## Pre-requisites
+## Prerequisites
 
 > Note: these should be in your system $PATH to work.
 
