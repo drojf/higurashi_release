@@ -16,6 +16,7 @@ chapterList = {
     "himatsubushi" : "HigurashiEp04_Data",
     "meakashi" : "HigurashiEp05_Data",
     "tsumihoroboshi" : "HigurashiEp06_Data"
+    "minagoroshi" : "HigurashiEp07_Data"
     }
 
 # Takes the HigurashiEp_Data folder from the selected chapter and stores it to be used as a path
