@@ -15,7 +15,7 @@ chapterList = {
     "tatarigoroshi" : "HigurashiEp03_Data",
     "himatsubushi" : "HigurashiEp04_Data",
     "meakashi" : "HigurashiEp05_Data",
-    "tsumihoroboshi" : "HigurashiEp06_Data"
+    "tsumihoroboshi" : "HigurashiEp06_Data",
     "minagoroshi" : "HigurashiEp07_Data"
     }
 
