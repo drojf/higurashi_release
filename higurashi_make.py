@@ -53,7 +53,10 @@ def buildPatch():
         except:
             print(f'{folder} not found')
     
-    shutil.move(f'{lowerChapterName}-master/tips.json', getData)
+    try:
+        shutil.move(f'{lowerChapterName}-master/tips.json', getData)
+    except:
+        print(f'{lowerChapterName}-master/tips.json not found')
     shutil.move('Assembly-CSharp.dll', f'{getData}/Managed')
     shutil.move('AVProVideo.dll', f'{getData}/Plugins')
 
