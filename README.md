@@ -28,4 +28,5 @@ Example: ``py higurashi_make.py onikakushi``
 - Support console arcs releases
 - Mac support 
     - unlikely but feel free to fork and diy
-- Batch support
+- ~~Batch support~~
+    - You might want to try ``for %x in (onikakushi watanagashi tatarigoroshi himatsubushi meakashi tsumihoroboshi minagoroshi) do py higurashi_make.py %x`` in Windows (or the equivalent in Linux)
