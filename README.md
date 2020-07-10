@@ -12,7 +12,8 @@ It currently supports all released chapters with the exception of Console Arcs.
 
 - Python 3.6 or newer
 - [7-Zip](https://www.7-zip.org/)
-- [aria2](https://aria2.github.io/)
+- wget
+    - ``pip install wget``
 
 Use [chocolatey](https://chocolatey.org/) on Windows or the package manager of your choice on Linux/Mac.
 

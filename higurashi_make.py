@@ -24,16 +24,19 @@ chapterList = {
 getData = chapterList.get(lowerChapterName)
 
 def prepareFiles():
-    os.makedirs(f'{getData}/StreamingAssets')
-    os.mkdir(f'{getData}/Managed')
-    os.mkdir(f'{getData}/Plugins')
+    try:
+        os.makedirs(f'{getData}/StreamingAssets')
+        os.mkdir(f'{getData}/Managed')
+        os.mkdir(f'{getData}/Plugins')
+    except:
+        pass
 
-    run([r'aria2c', '--file-allocation=none', '--continue=true', '--retry-wait=5', '-m 0', '-x 8', '-s 8', f'https://07th-mod.com/higurashi_dlls/{lowerChapterName}/Assembly-CSharp.dll'])
-    run([r'aria2c', '--file-allocation=none', '--continue=true', '--retry-wait=5', '-m 0', '-x 8', '-s 8', f'https://07th-mod.com/misc/AVProVideo.dll'])
-    run([r'aria2c', '--file-allocation=none', '--continue=true', '--retry-wait=5', '-m 0', '-x 8', '-s 8', f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip'])
-    run([r'7z', 'x', f'{lowerChapterName}-master.zip', '-aoa'])
+    run([r'wget', f'https://07th-mod.com/higurashi_dlls/{lowerChapterName}/Assembly-CSharp.dll'])
+    run([r'wget', 'https://07th-mod.com/misc/AVProVideo.dll'])
+    run([r'wget', f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip'])
+    run([r'7z', 'x', 'master.zip', '-aoa'])
 
-    os.remove(f'{lowerChapterName}-master.zip')
+    os.remove('master.zip')
 
 def buildPatch():
     # List of all folders used in releases. Dev and misc files are ignored
