@@ -1,4 +1,4 @@
-import os, shutil, requests, zipfile
+import os, shutil, requests
 from subprocess import run
 from sys import argv
 
@@ -30,9 +30,9 @@ def download(url):
 
 def prepareFiles():
     try:
-        os.makedirs(f'{getData}/StreamingAssets')
-        os.mkdir(f'{getData}/Managed')
-        os.mkdir(f'{getData}/Plugins')
+        os.makedirs(f'temp/{getData}/StreamingAssets')
+        os.mkdir(f'temp/{getData}/Managed')
+        os.mkdir(f'temp/{getData}/Plugins')
     except:
         pass
 
@@ -40,8 +40,7 @@ def prepareFiles():
     download('https://07th-mod.com/misc/AVProVideo.dll')
     download(f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip')
 
-    with zipfile.ZipFile("master.zip", "r") as zip:
-        zip.extractall()
+    shutil.unpack_archive('master.zip')
     
     os.remove('master.zip')
 
@@ -60,24 +59,24 @@ def buildPatch():
     # Iterates the list of folders above looking for valid folders in the master repo
     for folder in folders:
         try:
-            shutil.move(f'{lowerChapterName}-master/{folder}', f'{getData}/StreamingAssets')
+            shutil.move(f'{lowerChapterName}-master/{folder}', f'temp/{getData}/StreamingAssets')
         except:
             print(f'{folder} not found (this is ok)')
     
     try:
-        shutil.move(f'{lowerChapterName}-master/tips.json', getData)
+        shutil.move(f'{lowerChapterName}-master/tips.json', f'temp/{getData}')
     except:
         print(f'{lowerChapterName}-master/tips.json not found')
-    shutil.move('Assembly-CSharp.dll', f'{getData}/Managed')
-    shutil.move('AVProVideo.dll', f'{getData}/Plugins')
+    shutil.move('Assembly-CSharp.dll', f'temp/{getData}/Managed')
+    shutil.move('AVProVideo.dll', f'temp/{getData}/Plugins')
 
     # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
     upperChapter = chapterName.capitalize()
-    shutil.make_archive(f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z.zip', 'zip', getData)
+    shutil.make_archive(f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z.zip', 'zip', 'temp')
 
 def cleanUp():
     shutil.rmtree(f'{lowerChapterName}-master')
-    shutil.rmtree(getData)
+    shutil.rmtree('temp')
 
 print("Creating folders and downloading necessary files")
 prepareFiles()
