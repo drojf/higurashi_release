@@ -1,4 +1,4 @@
-import os, shutil
+import os, shutil, requests, zipfile
 from subprocess import run
 from sys import argv
 
@@ -23,6 +23,11 @@ chapterList = {
 # Takes the HigurashiEp_Data folder from the selected chapter and stores it to be used as a path
 getData = chapterList.get(lowerChapterName)
 
+def download(url):
+    r = requests.get(url, allow_redirects=True)
+    filename = url.rsplit('/', 1)[1]
+    open(filename, 'wb').write(r.content)
+
 def prepareFiles():
     try:
         os.makedirs(f'{getData}/StreamingAssets')
@@ -31,11 +36,13 @@ def prepareFiles():
     except:
         pass
 
-    run([r'wget', f'https://07th-mod.com/higurashi_dlls/{lowerChapterName}/Assembly-CSharp.dll'])
-    run([r'wget', 'https://07th-mod.com/misc/AVProVideo.dll'])
-    run([r'wget', f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip'])
-    run([r'7z', 'x', 'master.zip', '-aoa'])
+    download(f'https://07th-mod.com/higurashi_dlls/{lowerChapterName}/Assembly-CSharp.dll')
+    download('https://07th-mod.com/misc/AVProVideo.dll')
+    download(f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip')
 
+    with zipfile.ZipFile("master.zip", "r") as zip:
+        zip.extractall()
+    
     os.remove('master.zip')
 
 def buildPatch():
@@ -55,7 +62,7 @@ def buildPatch():
         try:
             shutil.move(f'{lowerChapterName}-master/{folder}', f'{getData}/StreamingAssets')
         except:
-            print(f'{folder} not found')
+            print(f'{folder} not found (this is ok)')
     
     try:
         shutil.move(f'{lowerChapterName}-master/tips.json', getData)
@@ -66,12 +73,15 @@ def buildPatch():
 
     # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
     upperChapter = chapterName.capitalize()
-    run([r'7z', 'a', f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z.zip', getData])
+    shutil.make_archive(f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z.zip', 'zip', getData)
 
 def cleanUp():
     shutil.rmtree(f'{lowerChapterName}-master')
     shutil.rmtree(getData)
 
+print("Creating folders and downloading necessary files")
 prepareFiles()
+print("Building the patch")
 buildPatch()
+print("Cleaning up the mess")
 cleanUp()

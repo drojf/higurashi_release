@@ -1,21 +1,13 @@
 # HigurashiRelease
 
-This simple script creates Higurashi releases from [07th-Mod](https://github.com/07th-mod/) with close to 
-no human interaction. It will fetch all the latest files from the game repository and 07th-Mod server to 
-create a zip file that can be extracted directly into the game folder or uploaded as a new release.
+This simple script creates Higurashi releases from [07th-Mod](https://github.com/07th-mod/) with close to no human interaction.
+It will fetch all the latest files from the game repository and 07th-Mod server to create a zip file that can be extracted directly into the game folder or uploaded as a new release.
 
 It currently supports all released chapters with the exception of Console Arcs.
 
 ## Prerequisites
 
-> Note: these should be in your system $PATH to work.
-
-- Python 3.6 or newer
-- [7-Zip](https://www.7-zip.org/)
-- wget
-    - ``pip install wget``
-
-Use [chocolatey](https://chocolatey.org/) on Windows or the package manager of your choice on Linux/Mac.
+- Python 3
 
 ## How to use
 
@@ -30,4 +22,4 @@ Example: ``py higurashi_make.py onikakushi``
 - Mac support 
     - unlikely but feel free to fork and diy
 - ~~Batch support~~
-    - You might want to try ``for %x in (onikakushi watanagashi tatarigoroshi himatsubushi meakashi tsumihoroboshi minagoroshi) do py higurashi_make.py %x`` in Windows (or the equivalent in Linux)
+    - You might want to try ``for %x in (onikakushi watanagashi tatarigoroshi himatsubushi meakashi tsumihoroboshi minagoroshi matsuribayashi) do py higurashi_make.py %x`` in Windows (or the equivalent in Linux)
