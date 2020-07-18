@@ -79,7 +79,7 @@ def buildPatch():
 
     # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
     upperChapter = chapterName.capitalize()
-    shutil.make_archive(f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z.zip', 'zip', 'temp')
+    shutil.make_archive(f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z', 'zip', 'temp')
 
 def cleanUp():
     shutil.rmtree(f'{lowerChapterName}-master')
