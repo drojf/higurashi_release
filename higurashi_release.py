@@ -1,5 +1,4 @@
 import os, shutil, requests
-from subprocess import run
 from sys import argv, exit
 from colorama import Fore, Style
 
