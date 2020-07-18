@@ -1,9 +1,16 @@
-import os, shutil, requests
+import os, shutil, requests, sys
 from subprocess import run
 from sys import argv
 
+help = """Usage:
+        higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
+    """
+
 # Enables the chapter name as an argument. Example: Himatsubushi
-chapterName = argv[1]
+try:
+    chapterName = argv[1]
+except:
+    sys.exit(help)
 
 # Makes sure the chapter name is lowercase
 lowerChapterName = chapterName.lower()
@@ -78,9 +85,14 @@ def cleanUp():
     shutil.rmtree(f'{lowerChapterName}-master')
     shutil.rmtree('temp')
 
-print("Creating folders and downloading necessary files")
-prepareFiles()
-print("Building the patch")
-buildPatch()
-print("Cleaning up the mess")
-cleanUp()
+if lowerChapterName in chapterList:
+    print("Creating folders and downloading necessary files")
+    prepareFiles()
+    print("Building the patch")
+    buildPatch()
+    print("Cleaning up the mess")
+    cleanUp()
+elif lowerChapterName == "-h" or "--help":
+    sys.exit(help)
+else:
+    sys.exit(help)

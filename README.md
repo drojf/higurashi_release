@@ -1,4 +1,4 @@
-# HigurashiRelease
+# higurashi_release
 
 This simple script creates Higurashi releases from [07th-Mod](https://github.com/07th-mod/) with close to no human interaction.
 It will fetch all the latest files from the game repository and 07th-Mod server to create a zip file that can be extracted directly into the game folder or uploaded as a new release.
