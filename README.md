@@ -7,7 +7,7 @@ It currently supports all released chapters with the exception of Console Arcs.
 
 ## Prerequisites
 
-- Python 3
+- Python 3.6 or higher
 
 ## How to use
 
