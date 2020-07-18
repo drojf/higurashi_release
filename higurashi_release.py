@@ -1,6 +1,7 @@
 import os, shutil, requests, sys
 from subprocess import run
 from sys import argv
+from colorama import Fore, Style
 
 help = """Usage:
         higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
@@ -86,11 +87,11 @@ def cleanUp():
     shutil.rmtree('temp')
 
 if lowerChapterName in chapterList:
-    print("Creating folders and downloading necessary files")
+    print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
     prepareFiles()
-    print("Building the patch")
+    print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
     buildPatch()
-    print("Cleaning up the mess")
+    print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
     cleanUp()
 elif lowerChapterName == "-h" or "--help":
     sys.exit(help)
