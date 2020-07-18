@@ -1,17 +1,17 @@
-import os, shutil, requests, sys
+import os, shutil, requests
 from subprocess import run
-from sys import argv
+from sys import argv, exit
 from colorama import Fore, Style
 
 help = """Usage:
         higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
-    """
+       """
 
 # Enables the chapter name as an argument. Example: Himatsubushi
 try:
     chapterName = argv[1]
 except:
-    sys.exit(help)
+    exit(help)
 
 # Makes sure the chapter name is lowercase
 lowerChapterName = chapterName.lower()
@@ -94,6 +94,6 @@ if lowerChapterName in chapterList:
     print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
     cleanUp()
 elif lowerChapterName == "-h" or "--help":
-    sys.exit(help)
+    exit(help)
 else:
-    sys.exit(help)
+    exit(help)
