@@ -1,5 +1,5 @@
 import os, shutil, requests
-from sys import argv, exit
+from sys import argv, exit, stdout
 from colorama import Fore, Style
 
 help = """Usage:
@@ -31,9 +31,28 @@ chapterList = {
 getData = chapterList.get(lowerChapterName)
 
 def download(url):
-    r = requests.get(url, allow_redirects=True)
     filename = url.rsplit('/', 1)[1]
-    open(filename, 'wb').write(r.content)
+    with open(filename, 'wb') as f:
+        response = requests.get(url, stream=True)
+        total = response.headers.get('content-length')
+
+        if total is None:
+            f.write(response.content)
+        else:
+            downloaded = 0
+            total = int(total)
+            for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
+                downloaded += len(data)
+                f.write(data)
+                done = int(50*downloaded/total)
+                stdout.write('\r[{}{}]'.format('█' * done, '.' * (50-done)))
+                stdout.flush()
+    stdout.write('\n')
+
+# def download(url):
+#     r = requests.get(url, allow_redirects=True)
+#     filename = url.rsplit('/', 1)[1]
+#     open(filename, 'wb').write(r.content)
 
 def prepareFiles():
     try:
@@ -44,8 +63,11 @@ def prepareFiles():
         pass
 
     download(f'https://07th-mod.com/higurashi_dlls/{lowerChapterName}/Assembly-CSharp.dll')
+    print("Downloaded Unity dll")
     download('https://07th-mod.com/misc/AVProVideo.dll')
+    print("Downloaded video plugin")
     download(f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip')
+    print(f"Downloaded {lowerChapterName} repository")
 
     shutil.unpack_archive('master.zip')
     
