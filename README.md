@@ -12,9 +12,12 @@ It currently supports all released chapters with the exception of Console Arcs.
 
 ## How to use
 
-Run ``py higurashi_make.py <chapterName>``
+```bash
+Usage:
+        higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
+```
 
-Example: ``py higurashi_make.py onikakushi``
+Example: ``python higurashi_release.py meakashi``
 
 ## TODO
 
