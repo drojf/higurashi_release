@@ -60,6 +60,7 @@ def download(url):
     stdout.write('\n')
 
 def compileScripts(lowerChapterName, dataFolderName, episode_number):
+    # TODO: add other chapter's archive names
     chapterNameToUIFilename = {
         "onikakushi": "Onikakushi-UI_5.2.2f1_win.7z",
         "watanagashi": "",
@@ -114,12 +115,9 @@ def compileScripts(lowerChapterName, dataFolderName, episode_number):
 
 
 def prepareFiles(lowerChapterName, dataFolderName):
-    try:
-        os.makedirs(f'temp/{dataFolderName}/StreamingAssets')
-        os.mkdir(f'temp/{dataFolderName}/Managed')
-        os.mkdir(f'temp/{dataFolderName}/Plugins')
-    except:
-        pass
+    os.makedirs(f'temp/{dataFolderName}/StreamingAssets', exist_ok=True)
+    os.makedirs(f'temp/{dataFolderName}/Managed', exist_ok=True)
+    os.makedirs(f'temp/{dataFolderName}/Plugins', exist_ok=True)
 
     download(f'https://07th-mod.com/higurashi_dlls/{lowerChapterName}/Assembly-CSharp.dll')
     print("Downloaded Unity dll")
