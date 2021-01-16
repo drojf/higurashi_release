@@ -1,6 +1,38 @@
 import os, shutil, requests
+import subprocess
+import sys
 from sys import argv, exit, stdout
 from colorama import Fore, Style
+
+
+def isWindows():
+    return sys.platform == "win32"
+
+
+def call(args, **kwargs):
+    print("running: {}".format(args))
+    retcode = subprocess.call(args, shell=isWindows(), **kwargs)  # use shell on windows
+    if retcode != 0:
+        raise SystemExit(retcode)
+
+
+def tryRemoveTree(path):
+    try:
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+    except FileNotFoundError:
+        pass
+
+
+def sevenZipMakeArchive(input_path, output_filename):
+    tryRemoveTree(output_filename)
+    call(["7z", "a", output_filename, input_path])
+
+
+def sevenZipExtract(input_path):
+    call(["7z", "x", input_path, '-y'])
 
 
 def download(url):
