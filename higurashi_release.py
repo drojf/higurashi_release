@@ -60,7 +60,15 @@ def download(url):
                 stdout.flush()
     stdout.write('\n')
 
-def compileScripts(lowerChapterName, dataFolderName, episode_number):
+
+def compileScripts():
+    class ChapterInfo:
+        def __init__(self, name, episodeNumber, uiFileName):
+            self.name = name
+            self.episodeNumber = episodeNumber
+            self.dataFolderName = f'HigurashiEp{episodeNumber:02}_Data'
+            self.uiArchiveName = uiFileName
+
     """
     Compiles scripts for the given chapter.
 
@@ -69,62 +77,63 @@ def compileScripts(lowerChapterName, dataFolderName, episode_number):
         - Windows, Steam UI files
         - Windows, Steam base assets
     """
-    # TODO: add other chapter's archive names
-    chapterNameToUIFilename = {
-        "onikakushi": "Onikakushi-UI_5.2.2f1_win.7z",
-        "watanagashi": "Watanagashi-UI_5.2.2f1_win.7z",
-        "tatarigoroshi": "Tatarigoroshi-UI_5.4.0f1_win.7z",
-        "himatsubushi": "Himatsubushi-UI_5.4.0f1_win.7z",
-        "meakashi": "Meakashi-UI_5.5.3p3_win.7z",
-        "tsumihoroboshi": "Tsumihoroboshi-UI_5.5.3p3_win.7z",
-        "minagoroshi": "Minagoroshi-UI_5.6.7f1_win.7z",
-        "matsuribayashi": "Matsuribayashi-UI_2017.2.5_win.7z"
-    }
+    chapterList = [
+        ChapterInfo("onikakushi",       1, "Onikakushi-UI_5.2.2f1_win.7z"),
+        ChapterInfo("watanagashi",      2, "Watanagashi-UI_5.2.2f1_win.7z"),
+        ChapterInfo("tatarigoroshi",    3, "Tatarigoroshi-UI_5.4.0f1_win.7z"),
+        ChapterInfo("himatsubushi",     4, "Himatsubushi-UI_5.4.1f1_win.7z"),
+        ChapterInfo("meakashi",         5, "Meakashi-UI_5.5.3p3_win.7z"),
+        ChapterInfo("tsumihoroboshi",   6, "Tsumihoroboshi-UI_5.5.3p3_win.7z"),
+        ChapterInfo("minagoroshi",      7, "Minagoroshi-UI_5.6.7f1_win.7z"),
+        ChapterInfo("matsuribayashi",   8, "Matsuribayashi-UI_2017.2.5_win.7z")
+    ]
 
-    # Note: For now, I have put all games in a single archive, then selectively extract the folder we want
-    # TODO: Could save a lot of download/extract time/space by compiling all games at once rather than one at a time,
-    #       however not sure how often this would be done
-    archive_name = 'higurashi_base.7z'
-    base_folder_name = f'{lowerChapterName}_base'
+    baseArchiveName = 'higurashi_base.7z'
 
     # - Download and extract the base archive for the selected game, using key
-    download(f'https://07th-mod.com/misc/script_building/{archive_name}')
+    download(f'https://07th-mod.com/misc/script_building/{baseArchiveName}')
     # Do not replace the below call with sevenZipExtract() as it would expose the 'EXTRACT_KEY'
-    subprocess.call(["7z", "x", archive_name, '-y', f"-p{os.environ['EXTRACT_KEY']}", base_folder_name], shell=isWindows())
-    os.remove(archive_name)
+    subprocess.call(["7z", "x", baseArchiveName, '-y', f"-p{os.environ['EXTRACT_KEY']}"], shell=isWindows())
 
-    # - Download and extract the UI archive for the selected game
-    uiFilename = chapterNameToUIFilename[lowerChapterName]
-    download(f'https://07th-mod.com/rikachama/ui/{uiFilename}')
-    sevenZipExtract(uiFilename, base_folder_name)
-    os.remove(uiFilename)
+    for chapter in chapterList:
+        print(f"\n\n>> Compiling [{chapter}] scripts...")
+        baseFolderName = f'{chapter.name}_base'
 
-    # - Download the DLL for the selected game
-    # TODO: when experimental DLL is released, don't use experimental DLL for building
-    dllFilename = f'experimental-drojf-dll-ep{episode_number}.7z'
-    download(f'https://github.com/drojf/higurashi-assembly/releases/latest/download/{dllFilename}')
-    sevenZipExtract(dllFilename, base_folder_name)
-    os.remove(dllFilename)
+        # - Download and extract the UI archive for the selected game
+        uiArchiveName = chapter.uiArchiveName
+        download(f'https://07th-mod.com/rikachama/ui/{uiArchiveName}')
+        sevenZipExtract(uiArchiveName, baseFolderName)
 
-    # Download the scripts for the selected game
-    scriptsFilename = 'master.zip'
-    download(f'https://github.com/07th-mod/{lowerChapterName}/archive/master.zip')
-    sevenZipExtract(scriptsFilename)
+        # - Download the DLL for the selected game
+        # TODO: when experimental DLL is released, don't use experimental DLL for building
+        dllArchiveName = f'experimental-drojf-dll-ep{chapter.episodeNumber}.7z'
+        download(f'https://github.com/drojf/higurashi-assembly/releases/latest/download/{dllArchiveName}')
+        sevenZipExtract(dllArchiveName, baseFolderName)
 
-    # - Copy the Update folder containing the scripts to be compiled to the base folder, so the game can find it
-    scriptsExtractFolder = f'{lowerChapterName}-master'
-    shutil.copytree(f'{scriptsExtractFolder}/Update', f'{base_folder_name}/{dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
-    shutil.rmtree(f'{scriptsExtractFolder}')
+        # Download the scripts for the selected game
+        scriptsArchiveName = 'master.zip'
+        download(f'https://github.com/07th-mod/{chapter.name}/archive/master.zip')
+        sevenZipExtract(scriptsArchiveName)
 
-    # - Run the game with 'quitaftercompile' as argument
-    call([f'{base_folder_name}\\HigurashiEp{episode_number:02}.exe', 'quitaftercompile'])
+        # - Copy the Update folder containing the scripts to be compiled to the base folder, so the game can find it
+        scriptsExtractFolder = f'{chapter.name}-master'
+        shutil.copytree(f'{scriptsExtractFolder}/Update', f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
+        shutil.rmtree(f'{scriptsExtractFolder}')
 
-    # - Copy the CompiledScriptsUpdate folder to the expected final build dir
-    shutil.copytree(f'{base_folder_name}/{dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
+        # - Run the game with 'quitaftercompile' as argument
+        call([f'{baseFolderName}\\HigurashiEp{chapter.episodeNumber:02}.exe', 'quitaftercompile'])
 
-    # Clean up
-    shutil.rmtree(base_folder_name)
+        # - Copy the CompiledScriptsUpdate folder to the expected final build dir
+        shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
 
+        # Clean up
+        os.remove(scriptsArchiveName)
+        os.remove(uiArchiveName)
+        os.remove(dllArchiveName)
+        shutil.rmtree(baseFolderName)
+
+    # Clean up base archive
+    os.remove(baseArchiveName)
 
 def prepareFiles(lowerChapterName, dataFolderName):
     os.makedirs(f'temp/{dataFolderName}/StreamingAssets', exist_ok=True)
@@ -191,6 +200,8 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
             higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
            """
 
+    compileScripts()
+
     # Enables the chapter name as an argument. Example: Himatsubushi
     if len(argv) < 2:
         raise SystemExit(help)
@@ -216,8 +227,6 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
         # Takes the HigurashiEp_Data folder from the selected chapter and stores it to be used as a path
         episodeNumber = chapterList[lowerChapterName]
         dataFolderName = f'HigurashiEp{episodeNumber:02}_Data'
-
-        compileScripts(lowerChapterName, dataFolderName, episodeNumber)
 
         print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
         prepareFiles(lowerChapterName, dataFolderName)
