@@ -171,11 +171,15 @@ def buildPatch(chapterName, dataFolderName):
     shutil.move('AVProVideo.dll', f'temp/{dataFolderName}/Plugins')
 
 
-def makeArchive(chapterName):
+def makeArchive(chapterName, dataFolderName):
     # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
     upperChapter = chapterName.capitalize()
     os.makedirs(f'output', exist_ok=True)
-    shutil.make_archive(f'output/{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z', 'zip', 'temp')
+    shutil.make_archive(base_name=f'output/{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z',
+                        format='zip',
+                        root_dir='temp',
+                        base_dir=dataFolderName
+                        )
 
 
 def cleanUp(chapterName):
@@ -211,7 +215,7 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
         buildPatch(chapter.name, chapter.dataFolderName)
 
         print(f"{Fore.GREEN}Creating Archive{Style.RESET_ALL}")
-        makeArchive(chapter.name)
+        makeArchive(chapter.name, chapter.dataFolderName)
 
         print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
         cleanUp(chapter.name)
