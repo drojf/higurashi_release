@@ -60,25 +60,36 @@ def download(url):
     stdout.write('\n')
 
 def compileScripts(lowerChapterName, dataFolderName, episode_number):
+    """
+    Compiles scripts for the given chapter.
+
+    Expects:
+        - to run on a Windows machine
+        - Windows, Steam UI files
+        - Windows, Steam base assets
+    """
     # TODO: add other chapter's archive names
     chapterNameToUIFilename = {
         "onikakushi": "Onikakushi-UI_5.2.2f1_win.7z",
-        "watanagashi": "",
-        "tatarigoroshi": "",
-        "himatsubushi": "",
-        "meakashi": "",
-        "tsumihoroboshi": "",
-        "minagoroshi": "",
-        "matsuribayashi": ""
+        "watanagashi": "Watanagashi-UI_5.2.2f1_win.7z",
+        "tatarigoroshi": "Tatarigoroshi-UI_5.4.0f1_win.7z",
+        "himatsubushi": "Himatsubushi-UI_5.4.0f1_win.7z",
+        "meakashi": "Meakashi-UI_5.5.3p3_win.7z",
+        "tsumihoroboshi": "Tsumihoroboshi-UI_5.5.3p3_win.7z",
+        "minagoroshi": "Minagoroshi-UI_5.6.7f1_win.7z",
+        "matsuribayashi": "Matsuribayashi-UI_2017.2.5_win.7z"
     }
 
-    archive_name = f'{lowerChapterName}_base.7z'
+    # Note: For now, I have put all games in a single archive, then selectively extract the folder we want
+    # TODO: Could save a lot of download/extract time/space by compiling all games at once rather than one at a time,
+    #       however not sure how often this would be done
+    archive_name = 'higurashi_base.7z'
     base_folder_name = f'{lowerChapterName}_base'
 
     # - Download and extract the base archive for the selected game, using key
     download(f'https://07th-mod.com/misc/script_building/{archive_name}')
-    # Do not replace the below call with sevenZipExtract as it would expose the 'EXTRACT_KEY'
-    subprocess.call(["7z", "x", archive_name, '-y', f"-p{os.environ['EXTRACT_KEY']}"], shell=isWindows())
+    # Do not replace the below call with sevenZipExtract() as it would expose the 'EXTRACT_KEY'
+    subprocess.call(["7z", "x", archive_name, '-y', f"-p{os.environ['EXTRACT_KEY']}", base_folder_name], shell=isWindows())
     os.remove(archive_name)
 
     # - Download and extract the UI archive for the selected game
