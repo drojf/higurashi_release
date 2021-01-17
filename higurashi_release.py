@@ -58,7 +58,7 @@ def download(url):
                 downloaded += len(data)
                 f.write(data)
                 done = int(50*downloaded/total)
-                stdout.write('\r[{}{}]'.format('█' * done, '.' * (50-done)))
+                stdout.write('\r[{}{}]'.format('=' * done, '.' * (50-done)))
                 stdout.flush()
     stdout.write('\n')
 
