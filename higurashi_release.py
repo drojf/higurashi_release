@@ -44,6 +44,7 @@ def download(url):
     filename = url.rsplit('/', 1)[1]
     with open(filename, 'wb') as f:
         response = requests.get(url, stream=True)
+        response.raise_for_status()
         total = response.headers.get('content-length')
 
         if total is None:
