@@ -184,7 +184,6 @@ def makeArchive(chapterName, dataFolderName):
 
 def cleanUp(chapterName):
     shutil.rmtree(f'{chapterName}-master')
-    shutil.rmtree('temp')
 
 
 def main():
@@ -219,6 +218,8 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
         print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
         cleanUp(chapter.name)
+
+    shutil.rmtree('temp')
 
 
 if __name__ == "__main__":
