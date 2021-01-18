@@ -98,15 +98,8 @@ def compileScripts(chapter: ChapterInfo):
     download(f'https://github.com/drojf/higurashi-assembly/releases/latest/download/{dllArchiveName}')
     sevenZipExtract(dllArchiveName, baseFolderName)
 
-    # Download the scripts for the selected game
-    scriptsArchiveName = 'master.zip'
-    download(f'https://github.com/07th-mod/{chapter.name}/archive/master.zip')
-    sevenZipExtract(scriptsArchiveName)
-
     # - Copy the Update folder containing the scripts to be compiled to the base folder, so the game can find it
-    scriptsExtractFolder = f'{chapter.name}-master'
-    shutil.copytree(f'{scriptsExtractFolder}/Update', f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
-    shutil.rmtree(f'{scriptsExtractFolder}')
+    shutil.copytree(f'Update', f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
 
     # - Run the game with 'quitaftercompile' as argument
     call([f'{baseFolderName}\\HigurashiEp{chapter.episodeNumber:02}.exe', 'quitaftercompile'])
@@ -115,7 +108,6 @@ def compileScripts(chapter: ChapterInfo):
     shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'CompiledUpdateScripts', dirs_exist_ok=True)
 
     # Clean up
-    os.remove(scriptsArchiveName)
     os.remove(uiArchiveName)
     os.remove(dllArchiveName)
     shutil.rmtree(baseFolderName)
