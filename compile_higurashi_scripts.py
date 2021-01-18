@@ -1,4 +1,5 @@
-import os, shutil, requests
+import os
+import shutil
 import subprocess
 import sys
 from sys import argv, stdout
@@ -40,24 +41,7 @@ def sevenZipExtract(input_path, outputDir=None):
 
 def download(url):
     print(f"Starting download of URL: {url}")
-    filename = url.rsplit('/', 1)[1]
-    with open(filename, 'wb') as f:
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        total = response.headers.get('content-length')
-
-        if total is None:
-            f.write(response.content)
-        else:
-            downloaded = 0
-            total = int(total)
-            for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
-                downloaded += len(data)
-                f.write(data)
-                done = int(50*downloaded/total)
-                stdout.write('\r[{}{}]'.format('=' * done, '.' * (50-done)))
-                stdout.flush()
-    stdout.write('\n')
+    call(['curl', '-OJ', url])
 
 
 class ChapterInfo:
