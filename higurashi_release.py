@@ -71,7 +71,7 @@ class ChapterInfo:
         self.uiArchiveName = uiFileName
 
 
-def compileScripts(chapterList: List[ChapterInfo]):
+def compileScripts(chapter: ChapterInfo):
     """
     Compiles scripts for the given chapter.
 
@@ -80,49 +80,48 @@ def compileScripts(chapterList: List[ChapterInfo]):
         - Windows, Steam UI files
         - Windows, Steam base assets
     """
-    baseArchiveName = 'higurashi_base.7z'
+    baseArchiveName = f'{chapter.name}_base.7z'
 
     # - Download and extract the base archive for the selected game, using key
     download(f'https://07th-mod.com/misc/script_building/{baseArchiveName}')
     # Do not replace the below call with sevenZipExtract() as it would expose the 'EXTRACT_KEY'
     subprocess.call(["7z", "x", baseArchiveName, '-y', f"-p{os.environ['EXTRACT_KEY']}"], shell=isWindows())
 
-    for chapter in chapterList:
-        print(f"\n\n>> Compiling [{chapter}] scripts...")
-        baseFolderName = f'{chapter.name}_base'
+    print(f"\n\n>> Compiling [{chapter.name}] scripts...")
+    baseFolderName = f'{chapter.name}_base'
 
-        # - Download and extract the UI archive for the selected game
-        uiArchiveName = chapter.uiArchiveName
-        download(f'https://07th-mod.com/rikachama/ui/{uiArchiveName}')
-        sevenZipExtract(uiArchiveName, baseFolderName)
+    # - Download and extract the UI archive for the selected game
+    uiArchiveName = chapter.uiArchiveName
+    download(f'https://07th-mod.com/rikachama/ui/{uiArchiveName}')
+    sevenZipExtract(uiArchiveName, baseFolderName)
 
-        # - Download the DLL for the selected game
-        # TODO: when experimental DLL is released, don't use experimental DLL for building
-        dllArchiveName = f'experimental-drojf-dll-ep{chapter.episodeNumber}.7z'
-        download(f'https://github.com/drojf/higurashi-assembly/releases/latest/download/{dllArchiveName}')
-        sevenZipExtract(dllArchiveName, baseFolderName)
+    # - Download the DLL for the selected game
+    # TODO: when experimental DLL is released, don't use experimental DLL for building
+    dllArchiveName = f'experimental-drojf-dll-ep{chapter.episodeNumber}.7z'
+    download(f'https://github.com/drojf/higurashi-assembly/releases/latest/download/{dllArchiveName}')
+    sevenZipExtract(dllArchiveName, baseFolderName)
 
-        # Download the scripts for the selected game
-        scriptsArchiveName = 'master.zip'
-        download(f'https://github.com/07th-mod/{chapter.name}/archive/master.zip')
-        sevenZipExtract(scriptsArchiveName)
+    # Download the scripts for the selected game
+    scriptsArchiveName = 'master.zip'
+    download(f'https://github.com/07th-mod/{chapter.name}/archive/master.zip')
+    sevenZipExtract(scriptsArchiveName)
 
-        # - Copy the Update folder containing the scripts to be compiled to the base folder, so the game can find it
-        scriptsExtractFolder = f'{chapter.name}-master'
-        shutil.copytree(f'{scriptsExtractFolder}/Update', f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
-        shutil.rmtree(f'{scriptsExtractFolder}')
+    # - Copy the Update folder containing the scripts to be compiled to the base folder, so the game can find it
+    scriptsExtractFolder = f'{chapter.name}-master'
+    shutil.copytree(f'{scriptsExtractFolder}/Update', f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
+    shutil.rmtree(f'{scriptsExtractFolder}')
 
-        # - Run the game with 'quitaftercompile' as argument
-        call([f'{baseFolderName}\\HigurashiEp{chapter.episodeNumber:02}.exe', 'quitaftercompile'])
+    # - Run the game with 'quitaftercompile' as argument
+    call([f'{baseFolderName}\\HigurashiEp{chapter.episodeNumber:02}.exe', 'quitaftercompile'])
 
-        # - Copy the CompiledScriptsUpdate folder to the expected final build dir
-        shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
+    # - Copy the CompiledScriptsUpdate folder to the expected final build dir
+    shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
 
-        # Clean up
-        os.remove(scriptsArchiveName)
-        os.remove(uiArchiveName)
-        os.remove(dllArchiveName)
-        shutil.rmtree(baseFolderName)
+    # Clean up
+    os.remove(scriptsArchiveName)
+    os.remove(uiArchiveName)
+    os.remove(dllArchiveName)
+    shutil.rmtree(baseFolderName)
 
     # Clean up base archive
     os.remove(baseArchiveName)
@@ -192,7 +191,17 @@ def main():
 
 This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
-    chapterList = [
+    help = """Usage:
+            higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
+           """
+
+    # Enables the chapter name as an argument. Example: Himatsubushi
+    if len(argv) < 2:
+        raise SystemExit(help)
+
+    chapterName = argv[1]
+
+    chapterListA = [
         ChapterInfo("onikakushi",       1, "Onikakushi-UI_5.2.2f1_win.7z"),
         ChapterInfo("watanagashi",      2, "Watanagashi-UI_5.2.2f1_win.7z"),
         ChapterInfo("tatarigoroshi",    3, "Tatarigoroshi-UI_5.4.0f1_win.7z"),
@@ -203,24 +212,29 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
         ChapterInfo("matsuribayashi",   8, "Matsuribayashi-UI_2017.2.5_win.7z")
     ]
 
+    chapterDict = dict((chapter.name, chapter) for chapter in chapterListA)
+
+    if chapterName not in chapterDict:
+        raise SystemExit(f"Error: Invalid Chapter Selected\n\n{help}")
+
+    chapter = chapterDict[chapterName]
+
     # Compile every chapter's scripts before building archives
-    compileScripts(chapterList)
+    compileScripts(chapter)
 
-    for chapter in chapterList:
-        print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
-        prepareFiles(chapter.name, chapter.dataFolderName)
+    print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
+    prepareFiles(chapter.name, chapter.dataFolderName)
 
-        print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
-        buildPatch(chapter.name, chapter.dataFolderName)
+    print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
+    buildPatch(chapter.name, chapter.dataFolderName)
 
-        print(f"{Fore.GREEN}Creating Archive{Style.RESET_ALL}")
-        makeArchive(chapter.name, chapter.dataFolderName)
+    print(f"{Fore.GREEN}Creating Archive{Style.RESET_ALL}")
+    makeArchive(chapter.name, chapter.dataFolderName)
 
-        print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
-        cleanUp(chapter.name)
+    print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
+    cleanUp(chapter.name)
 
     shutil.rmtree('temp')
-
 
 if __name__ == "__main__":
     main()
