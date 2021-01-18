@@ -139,7 +139,7 @@ def main():
 This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
     help = """Usage:
-            higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
+            compile_higurashi_scripts.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
            """
 
     # Enables the chapter name as an argument. Example: Himatsubushi

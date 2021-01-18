@@ -28,7 +28,7 @@ jobs:
       - name: Run Release Script
         env:
           EXTRACT_KEY: ${{ secrets.EXTRACT_KEY }}
-        run: python higurashi_release.py
+        run: python compile_higurashi_scripts.py
 
       # Publish a release
       # For more info on options see: https://github.com/softprops/action-gh-release
