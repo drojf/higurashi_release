@@ -101,8 +101,24 @@ def compileScripts(chapter: ChapterInfo):
     # - Copy the Update folder containing the scripts to be compiled to the base folder, so the game can find it
     shutil.copytree(f'Update', f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/Update', dirs_exist_ok=True)
 
+    # - Remove status file if it exists
+    statusFilename = "higu_script_compile_status.txt"
+    if os.path.exists(statusFilename):
+        os.remove(statusFilename)
+
     # - Run the game with 'quitaftercompile' as argument
     call([f'{baseFolderName}\\HigurashiEp{chapter.episodeNumber:02}.exe', 'quitaftercompile'])
+
+    # - Check compile status file
+    if not os.path.exists(statusFilename):
+        raise SystemExit("Script Compile Failed: Script compilation status file not found")
+
+    with open(statusFilename, "r") as f:
+        status = f.read().strip()
+        if status != "Compile OK":
+            raise SystemExit(f"Script Compile Failed: Script compilation status indicated status {status}")
+
+    os.remove(statusFilename)
 
     # - Copy the CompiledScriptsUpdate folder to the expected final build dir
     shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'CompiledUpdateScripts', dirs_exist_ok=True)
