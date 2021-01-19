@@ -36,10 +36,13 @@ jobs:
         if: ${{ github.event_name == 'push' }} # Only create pull requests from pushes, not from pull requests
         with:
           commit-message: update compiled scripts
-          title: Update compiled scripts
+          title: Update Compiled Scripts (github-actions)
           body: |
             This is an automatically generated pull request.
 
             This pull request compiles all the scripts in the `Update` folder into the `CompiledUpdateScripts` folder,
             so the end-user does not need to compile it on their end.
+
+            You should accept this pull request just before releasing a patch. Please do not accept this pull request at other times,
+            as this will generate unnecessary commits.
           branch: update-compiled-scripts
