@@ -1,0 +1,48 @@
+name: Generate Compiled Scripts Pull Request
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  windows_build:
+    name: Windows Build
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      # Setup python (Windows VM is Python 3.7 by default, we need at least Python 3.8)
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # NOTE: I use ${{ github.event.repository.name }} so the script knows what game is being compiled, but not
+      #       sure if this works in all cases, see:
+      #       https://stackoverflow.com/questions/62803531/repository-name-as-a-github-action-environment-variable
+      #       may need to use ${{ github.event.pull_request.base.repo.name }} for pull requests?
+      - name: Run Release Script
+        env:
+          EXTRACT_KEY: ${{ secrets.EXTRACT_KEY }}
+        run: |
+          curl -OJ https://raw.githubusercontent.com/07th-mod/higurashi_release/master/compile_higurashi_scripts/compile_higurashi_scripts.py
+          python compile_higurashi_scripts.py ${{ github.event.repository.name }}
+          rm compile_higurashi_scripts.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: update compiled scripts
+          title: Update compiled scripts
+          body: |
+            This is an automatically generated pull request.
+
+            This pull request compiles all the scripts in the `Update` folder into the `CompiledUpdateScripts` folder,
+            so the end-user does not need to compile it on their end.
+          branch: update-compiled-scripts

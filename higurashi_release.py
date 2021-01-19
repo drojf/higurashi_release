@@ -2,35 +2,9 @@ import os, shutil, requests
 from sys import argv, exit, stdout
 from colorama import Fore, Style
 
-help = """Usage:
-        higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
-       """
-
-# Enables the chapter name as an argument. Example: Himatsubushi
-try:
-    chapterName = argv[1]
-except:
-    exit(help)
-
-# Makes sure the chapter name is lowercase
-lowerChapterName = chapterName.lower()
-
-# List of supported chapters
-chapterList = {
-    "onikakushi" : "HigurashiEp01_Data",
-    "watanagashi" : "HigurashiEp02_Data",
-    "tatarigoroshi" : "HigurashiEp03_Data",
-    "himatsubushi" : "HigurashiEp04_Data",
-    "meakashi" : "HigurashiEp05_Data",
-    "tsumihoroboshi" : "HigurashiEp06_Data",
-    "minagoroshi" : "HigurashiEp07_Data",
-    "matsuribayashi" : "HigurashiEp08_Data"
-    }
-
-# Takes the HigurashiEp_Data folder from the selected chapter and stores it to be used as a path
-getData = chapterList.get(lowerChapterName)
 
 def download(url):
+    print(f"Starting download of URL: {url}")
     filename = url.rsplit('/', 1)[1]
     with open(filename, 'wb') as f:
         response = requests.get(url, stream=True)
@@ -49,16 +23,12 @@ def download(url):
                 stdout.flush()
     stdout.write('\n')
 
-# def download(url):
-#     r = requests.get(url, allow_redirects=True)
-#     filename = url.rsplit('/', 1)[1]
-#     open(filename, 'wb').write(r.content)
 
-def prepareFiles():
+def prepareFiles(lowerChapterName, dataFolderName):
     try:
-        os.makedirs(f'temp/{getData}/StreamingAssets')
-        os.mkdir(f'temp/{getData}/Managed')
-        os.mkdir(f'temp/{getData}/Plugins')
+        os.makedirs(f'temp/{dataFolderName}/StreamingAssets')
+        os.mkdir(f'temp/{dataFolderName}/Managed')
+        os.mkdir(f'temp/{dataFolderName}/Plugins')
     except:
         pass
 
@@ -73,7 +43,8 @@ def prepareFiles():
     
     os.remove('master.zip')
 
-def buildPatch():
+
+def buildPatch(lowerChapterName, dataFolderName):
     # List of all folders used in releases. Dev and misc files are ignored
     folders = [
         "CG",
@@ -88,33 +59,75 @@ def buildPatch():
     # Iterates the list of folders above looking for valid folders in the master repo
     for folder in folders:
         try:
-            shutil.move(f'{lowerChapterName}-master/{folder}', f'temp/{getData}/StreamingAssets')
+            shutil.move(f'{lowerChapterName}-master/{folder}', f'temp/{dataFolderName}/StreamingAssets')
         except:
             print(f'{folder} not found (this is ok)')
     
     try:
-        shutil.move(f'{lowerChapterName}-master/tips.json', f'temp/{getData}')
+        shutil.move(f'{lowerChapterName}-master/tips.json', f'temp/{dataFolderName}')
     except:
         print(f'{lowerChapterName}-master/tips.json not found')
-    shutil.move('Assembly-CSharp.dll', f'temp/{getData}/Managed')
-    shutil.move('AVProVideo.dll', f'temp/{getData}/Plugins')
+    shutil.move('Assembly-CSharp.dll', f'temp/{dataFolderName}/Managed')
+    shutil.move('AVProVideo.dll', f'temp/{dataFolderName}/Plugins')
 
+
+def makeArchive(chapterName):
     # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
     upperChapter = chapterName.capitalize()
     shutil.make_archive(f'{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z', 'zip', 'temp')
 
-def cleanUp():
+
+def cleanUp(lowerChapterName):
     shutil.rmtree(f'{lowerChapterName}-master')
     shutil.rmtree('temp')
 
-if lowerChapterName in chapterList:
-    print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
-    prepareFiles()
-    print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
-    buildPatch()
-    print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
-    cleanUp()
-elif lowerChapterName == "-h" or "--help":
-    exit(help)
-else:
-    exit(help)
+
+def main():
+    help = """Usage:
+            higurashi_release.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
+           """
+
+    # Enables the chapter name as an argument. Example: Himatsubushi
+    if len(argv) < 2:
+        raise SystemExit(help)
+
+    chapterName = argv[1]
+
+    # Makes sure the chapter name is lowercase
+    lowerChapterName = chapterName.lower()
+
+    # List of supported chapters
+    chapterList = {
+        "onikakushi": "HigurashiEp01_Data",
+        "watanagashi": "HigurashiEp02_Data",
+        "tatarigoroshi": "HigurashiEp03_Data",
+        "himatsubushi": "HigurashiEp04_Data",
+        "meakashi": "HigurashiEp05_Data",
+        "tsumihoroboshi": "HigurashiEp06_Data",
+        "minagoroshi": "HigurashiEp07_Data",
+        "matsuribayashi": "HigurashiEp08_Data"
+    }
+
+    # Takes the HigurashiEp_Data folder from the selected chapter and stores it to be used as a path
+    dataFolderName = chapterList.get(lowerChapterName)
+
+    if lowerChapterName in chapterList:
+        print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
+        prepareFiles(lowerChapterName, dataFolderName)
+
+        print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
+        buildPatch(lowerChapterName, dataFolderName)
+
+        print(f"{Fore.GREEN}Creating Archive{Style.RESET_ALL}")
+        makeArchive(chapterName)
+
+        print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
+        cleanUp(lowerChapterName)
+    elif lowerChapterName == "-h" or "--help":
+        exit(help)
+    else:
+        exit(help)
+
+
+if __name__ == "__main__":
+    main()
