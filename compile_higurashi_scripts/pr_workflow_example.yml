@@ -23,10 +23,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # NOTE: I use ${{ github.event.repository.name }} so the script knows what game is being compiled, but not
-      #       sure if this works in all cases, see:
-      #       https://stackoverflow.com/questions/62803531/repository-name-as-a-github-action-environment-variable
-      #       may need to use ${{ github.event.pull_request.base.repo.name }} for pull requests?
       - name: Run Release Script
         env:
           EXTRACT_KEY: ${{ secrets.EXTRACT_KEY }}
@@ -37,6 +33,7 @@ jobs:
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
+        if: ${{ github.event_name == 'push' }} # Only create pull requests from pushes, not from pull requests
         with:
           commit-message: update compiled scripts
           title: Update compiled scripts
