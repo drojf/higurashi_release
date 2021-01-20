@@ -130,9 +130,9 @@ def prepareFiles(chapterName, dataFolderName):
     download(f'https://github.com/07th-mod/{chapterName}/archive/master.zip')
     print(f"Downloaded {chapterName} repository")
 
-    shutil.unpack_archive('master.zip')
+    shutil.unpack_archive(f'{chapterName}-master.zip')
     
-    os.remove('master.zip')
+    os.remove(f'{chapterName}-master.zip')
 
 
 def buildPatch(chapterName, dataFolderName):
