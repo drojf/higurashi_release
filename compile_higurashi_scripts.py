@@ -132,7 +132,7 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
     chapterName = argv[1]
 
-    chapterListA = [
+    chapterList = [
         ChapterInfo("onikakushi",       1, "Onikakushi-UI_5.2.2f1_win.7z"),
         ChapterInfo("watanagashi",      2, "Watanagashi-UI_5.2.2f1_win.7z"),
         ChapterInfo("tatarigoroshi",    3, "Tatarigoroshi-UI_5.4.0f1_win.7z"),
@@ -143,7 +143,7 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
         ChapterInfo("matsuribayashi",   8, "Matsuribayashi-UI_2017.2.5_win.7z")
     ]
 
-    chapterDict = dict((chapter.name, chapter) for chapter in chapterListA)
+    chapterDict = dict((chapter.name, chapter) for chapter in chapterList)
 
     if chapterName not in chapterDict:
         raise SystemExit(f"Error: Invalid Chapter Selected\n\n{help}")
