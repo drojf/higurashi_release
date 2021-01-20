@@ -2,8 +2,8 @@ import os
 import shutil
 import subprocess
 import sys
-from sys import argv, stdout
-
+from sys import argv, exit, stdout
+from typing import List
 
 def isWindows():
     return sys.platform == "win32"
@@ -105,7 +105,7 @@ def compileScripts(chapter: ChapterInfo):
     os.remove(statusFilename)
 
     # - Copy the CompiledScriptsUpdate folder to the expected final build dir
-    shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'CompiledUpdateScripts', dirs_exist_ok=True)
+    shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
 
     # Clean up
     os.remove(uiArchiveName)
@@ -115,6 +115,64 @@ def compileScripts(chapter: ChapterInfo):
     # Clean up base archive
     os.remove(baseArchiveName)
 
+def prepareFiles(chapterName, dataFolderName):
+    os.makedirs(f'temp/{dataFolderName}/StreamingAssets', exist_ok=True)
+    os.makedirs(f'temp/{dataFolderName}/Managed', exist_ok=True)
+    os.makedirs(f'temp/{dataFolderName}/Plugins', exist_ok=True)
+
+    download(f'https://07th-mod.com/higurashi_dlls/{chapterName}/Assembly-CSharp.dll')
+    print("Downloaded Unity dll")
+    download('https://07th-mod.com/misc/AVProVideo.dll')
+    print("Downloaded video plugin")
+    download(f'https://github.com/07th-mod/{chapterName}/archive/master.zip')
+    print(f"Downloaded {chapterName} repository")
+
+    shutil.unpack_archive(f'{chapterName}-master.zip')
+
+    os.remove(f'{chapterName}-master.zip')
+
+
+def buildPatch(chapterName, dataFolderName):
+    # List of all folders used in releases. Dev and misc files are ignored
+    folders = [
+        "CG",
+        "CGAlt",
+        "SE",
+        "voice",
+        "spectrum",
+        "BGM",
+        "Update"
+    ]
+
+    # Iterates the list of folders above looking for valid folders in the master repo
+    for folder in folders:
+        try:
+            shutil.move(f'{chapterName}-master/{folder}', f'temp/{dataFolderName}/StreamingAssets')
+        except:
+            print(f'{folder} not found (this is ok)')
+
+    try:
+        shutil.move(f'{chapterName}-master/tips.json', f'temp/{dataFolderName}')
+    except:
+        print(f'{chapterName}-master/tips.json not found')
+    shutil.move('Assembly-CSharp.dll', f'temp/{dataFolderName}/Managed')
+    shutil.move('AVProVideo.dll', f'temp/{dataFolderName}/Plugins')
+
+
+def makeArchive(chapterName, dataFolderName, gitTag):
+    # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
+    upperChapter = chapterName.capitalize()
+    os.makedirs(f'output', exist_ok=True)
+    shutil.make_archive(base_name=f'output/{upperChapter}.Voice.and.Graphics.Patch.{gitTag}',
+                        format='zip',
+                        root_dir='temp',
+                        base_dir=dataFolderName
+                        )
+
+
+def cleanUp(chapterName):
+    shutil.rmtree(f'{chapterName}-master')
+
 
 def main():
     if sys.version_info < (3, 8):
@@ -123,16 +181,21 @@ def main():
 This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
     help = """Usage:
-            compile_higurashi_scripts.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
+            deploy_higurashi.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
            """
 
     # Enables the chapter name as an argument. Example: Himatsubushi
     if len(argv) < 2:
         raise SystemExit(help)
 
+    # Get Git Tag Environment Variables
+    GIT_REF = os.environ.get("GITHUB_REF",  "unknown/unknown/X.Y.Z")    # Github Tag / Version info
+    GIT_TAG = GIT_REF.split('/')[-1]
+    print(f"--- Git Ref: {GIT_REF} Git Tag: {GIT_TAG} ---")
+
     chapterName = argv[1]
 
-    chapterListA = [
+    chapterList = [
         ChapterInfo("onikakushi",       1, "Onikakushi-UI_5.2.2f1_win.7z"),
         ChapterInfo("watanagashi",      2, "Watanagashi-UI_5.2.2f1_win.7z"),
         ChapterInfo("tatarigoroshi",    3, "Tatarigoroshi-UI_5.4.0f1_win.7z"),
@@ -143,16 +206,29 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
         ChapterInfo("matsuribayashi",   8, "Matsuribayashi-UI_2017.2.5_win.7z")
     ]
 
-    chapterDict = dict((chapter.name, chapter) for chapter in chapterListA)
+    chapterDict = dict((chapter.name, chapter) for chapter in chapterList)
 
     if chapterName not in chapterDict:
-        raise SystemExit(f"Error: Invalid Chapter [{chapterName}]\n\n{help}")
+        raise SystemExit(f"Error: Invalid Chapter Selected\n\n{help}")
 
     chapter = chapterDict[chapterName]
 
     # Compile every chapter's scripts before building archives
     compileScripts(chapter)
 
+    print(f">>> Creating folders and downloading necessary files")
+    prepareFiles(chapter.name, chapter.dataFolderName)
+
+    print(f">>> Building the patch")
+    buildPatch(chapter.name, chapter.dataFolderName)
+
+    print(f">>> Creating Archive")
+    makeArchive(chapter.name, chapter.dataFolderName, GIT_TAG)
+
+    print(f">>> Cleaning up the mess")
+    cleanUp(chapter.name)
+
+    shutil.rmtree('temp')
 
 if __name__ == "__main__":
     main()
