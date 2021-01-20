@@ -159,11 +159,11 @@ def buildPatch(chapterName, dataFolderName):
     shutil.move('AVProVideo.dll', f'temp/{dataFolderName}/Plugins')
 
 
-def makeArchive(chapterName, dataFolderName):
+def makeArchive(chapterName, dataFolderName, GIT_TAG):
     # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
     upperChapter = chapterName.capitalize()
     os.makedirs(f'output', exist_ok=True)
-    shutil.make_archive(base_name=f'output/{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z',
+    shutil.make_archive(base_name=f'output/{upperChapter}.Voice.and.Graphics.Patch.{GIT_TAG}',
                         format='zip',
                         root_dir='temp',
                         base_dir=dataFolderName
@@ -187,6 +187,11 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
     # Enables the chapter name as an argument. Example: Himatsubushi
     if len(argv) < 2:
         raise SystemExit(help)
+
+    # Get Git Tag Environment Variables
+    GIT_REF = os.environ.get("GITHUB_REF",  "unknown/unknown/X.Y.Z")    # Github Tag / Version info
+    GIT_TAG = GIT_REF.split('/')[-1]
+    print(f"--- Git Ref: {GIT_REF} Git Tag: {GIT_TAG} ---")
 
     chapterName = argv[1]
 
@@ -218,7 +223,7 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
     buildPatch(chapter.name, chapter.dataFolderName)
 
     print(f">>> Creating Archive")
-    makeArchive(chapter.name, chapter.dataFolderName)
+    makeArchive(chapter.name, chapter.dataFolderName, GIT_TAG)
 
     print(f">>> Cleaning up the mess")
     cleanUp(chapter.name)
