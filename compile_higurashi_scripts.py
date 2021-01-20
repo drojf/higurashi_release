@@ -5,9 +5,6 @@ import sys
 from sys import argv, exit, stdout
 from typing import List
 
-from colorama import Fore, Style
-
-
 def isWindows():
     return sys.platform == "win32"
 
@@ -214,16 +211,16 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
     # Compile every chapter's scripts before building archives
     compileScripts(chapter)
 
-    print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
+    print(f">>> Creating folders and downloading necessary files")
     prepareFiles(chapter.name, chapter.dataFolderName)
 
-    print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
+    print(f">>> Building the patch")
     buildPatch(chapter.name, chapter.dataFolderName)
 
-    print(f"{Fore.GREEN}Creating Archive{Style.RESET_ALL}")
+    print(f">>> Creating Archive")
     makeArchive(chapter.name, chapter.dataFolderName)
 
-    print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
+    print(f">>> Cleaning up the mess")
     cleanUp(chapter.name)
 
     shutil.rmtree('temp')
