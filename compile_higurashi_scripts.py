@@ -2,7 +2,10 @@ import os
 import shutil
 import subprocess
 import sys
-from sys import argv, stdout
+from sys import argv, exit, stdout
+from typing import List
+
+from colorama import Fore, Style
 
 
 def isWindows():
@@ -105,7 +108,7 @@ def compileScripts(chapter: ChapterInfo):
     os.remove(statusFilename)
 
     # - Copy the CompiledScriptsUpdate folder to the expected final build dir
-    shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'CompiledUpdateScripts', dirs_exist_ok=True)
+    shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
 
     # Clean up
     os.remove(uiArchiveName)
@@ -114,6 +117,64 @@ def compileScripts(chapter: ChapterInfo):
 
     # Clean up base archive
     os.remove(baseArchiveName)
+
+def prepareFiles(chapterName, dataFolderName):
+    os.makedirs(f'temp/{dataFolderName}/StreamingAssets', exist_ok=True)
+    os.makedirs(f'temp/{dataFolderName}/Managed', exist_ok=True)
+    os.makedirs(f'temp/{dataFolderName}/Plugins', exist_ok=True)
+
+    download(f'https://07th-mod.com/higurashi_dlls/{chapterName}/Assembly-CSharp.dll')
+    print("Downloaded Unity dll")
+    download('https://07th-mod.com/misc/AVProVideo.dll')
+    print("Downloaded video plugin")
+    download(f'https://github.com/07th-mod/{chapterName}/archive/master.zip')
+    print(f"Downloaded {chapterName} repository")
+
+    shutil.unpack_archive('master.zip')
+    
+    os.remove('master.zip')
+
+
+def buildPatch(chapterName, dataFolderName):
+    # List of all folders used in releases. Dev and misc files are ignored
+    folders = [
+        "CG",
+        "CGAlt",
+        "SE",
+        "voice",
+        "spectrum",
+        "BGM",
+        "Update"
+    ]
+
+    # Iterates the list of folders above looking for valid folders in the master repo
+    for folder in folders:
+        try:
+            shutil.move(f'{chapterName}-master/{folder}', f'temp/{dataFolderName}/StreamingAssets')
+        except:
+            print(f'{folder} not found (this is ok)')
+    
+    try:
+        shutil.move(f'{chapterName}-master/tips.json', f'temp/{dataFolderName}')
+    except:
+        print(f'{chapterName}-master/tips.json not found')
+    shutil.move('Assembly-CSharp.dll', f'temp/{dataFolderName}/Managed')
+    shutil.move('AVProVideo.dll', f'temp/{dataFolderName}/Plugins')
+
+
+def makeArchive(chapterName, dataFolderName):
+    # Turns the first letter of the chapter name into uppercase for consistency when uploading a release
+    upperChapter = chapterName.capitalize()
+    os.makedirs(f'output', exist_ok=True)
+    shutil.make_archive(base_name=f'output/{upperChapter}.Voice.and.Graphics.Patch.vX.Y.Z',
+                        format='zip',
+                        root_dir='temp',
+                        base_dir=dataFolderName
+                        )
+
+
+def cleanUp(chapterName):
+    shutil.rmtree(f'{chapterName}-master')
 
 
 def main():
@@ -153,6 +214,19 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
     # Compile every chapter's scripts before building archives
     compileScripts(chapter)
 
+    print(f"{Fore.GREEN}Creating folders and downloading necessary files{Style.RESET_ALL}")
+    prepareFiles(chapter.name, chapter.dataFolderName)
+
+    print(f"{Fore.GREEN}Building the patch{Style.RESET_ALL}")
+    buildPatch(chapter.name, chapter.dataFolderName)
+
+    print(f"{Fore.GREEN}Creating Archive{Style.RESET_ALL}")
+    makeArchive(chapter.name, chapter.dataFolderName)
+
+    print(f"{Fore.GREEN}Cleaning up the mess{Style.RESET_ALL}")
+    cleanUp(chapter.name)
+
+    shutil.rmtree('temp')
 
 if __name__ == "__main__":
     main()
