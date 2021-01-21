@@ -129,12 +129,6 @@ def prepareFiles(chapterName, dataFolderName):
     print("Downloaded Unity dll")
     download('https://07th-mod.com/misc/AVProVideo.dll')
     print("Downloaded video plugin")
-    download(f'https://github.com/07th-mod/{chapterName}/archive/master.zip')
-    print(f"Downloaded {chapterName} repository")
-
-    shutil.unpack_archive(f'{chapterName}-master.zip')
-
-    os.remove(f'{chapterName}-master.zip')
 
 
 def buildPatch(chapterName, dataFolderName):
@@ -152,14 +146,14 @@ def buildPatch(chapterName, dataFolderName):
     # Iterates the list of folders above looking for valid folders in the master repo
     for folder in folders:
         try:
-            shutil.move(f'{chapterName}-master/{folder}', f'temp/{dataFolderName}/StreamingAssets')
+            shutil.move(f'{folder}', f'temp/{dataFolderName}/StreamingAssets')
         except:
             print(f'{folder} not found (this is ok)')
 
     try:
-        shutil.move(f'{chapterName}-master/tips.json', f'temp/{dataFolderName}')
+        shutil.move(f'tips.json', f'temp/{dataFolderName}')
     except:
-        print(f'{chapterName}-master/tips.json not found')
+        print(f'tips.json not found')
     shutil.move('Assembly-CSharp.dll', f'temp/{dataFolderName}/Managed')
     shutil.move('AVProVideo.dll', f'temp/{dataFolderName}/Plugins')
 
@@ -175,10 +169,6 @@ def makeArchive(chapterName, dataFolderName, gitTag):
                         )
 
 
-def cleanUp(chapterName):
-    shutil.rmtree(f'{chapterName}-master')
-
-
 def main():
     if sys.version_info < (3, 8):
         raise SystemExit(f"""ERROR: This script requires Python >= 3.8 to run (you have {sys.version_info.major}.{sys.version_info.minor})!
@@ -186,7 +176,7 @@ def main():
 This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
     argparser = argparse.ArgumentParser(usage='deploy_higurashi.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)',
-                                        description='This script creates the "script" archive used in the Higurashi mod. It expects to be run from one of the Higurashi mod repositories.')
+                                        description='This script creates the "script" archive used in the Higurashi mod. It expects to be run from the root of one of the Higurashi mod repositories.')
 
     argparser.add_argument("chapter", help="The name of the chapter to be deployed.")
     argparser.add_argument(
@@ -235,8 +225,6 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
     makeArchive(chapter.name, chapter.dataFolderName, GIT_TAG)
 
     print(f">>> Cleaning up the mess")
-    cleanUp(chapter.name)
-
     shutil.rmtree('temp')
 
 if __name__ == "__main__":
