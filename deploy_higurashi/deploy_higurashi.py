@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import sys
+import argparse
 from sys import argv, exit, stdout
 from typing import List
 
@@ -61,12 +62,16 @@ def compileScripts(chapter: ChapterInfo):
         - Windows, Steam UI files
         - Windows, Steam base assets
     """
+    extractKey = os.environ.get('EXTRACT_KEY')
+    if extractKey is None:
+        raise SystemExit("Error: Can't compile scripts as environment variable 'EXTRACT_KEY' not set.")
+
     baseArchiveName = f'{chapter.name}_base.7z'
 
     # - Download and extract the base archive for the selected game, using key
     download(f'https://07th-mod.com/misc/script_building/{baseArchiveName}')
     # Do not replace the below call with sevenZipExtract() as it would expose the 'EXTRACT_KEY'
-    subprocess.call(["7z", "x", baseArchiveName, '-y', f"-p{os.environ['EXTRACT_KEY']}"], shell=isWindows())
+    subprocess.call(["7z", "x", baseArchiveName, '-y', f"-p{extractKey}"], shell=isWindows())
 
     print(f"\n\n>> Compiling [{chapter.name}] scripts...")
     baseFolderName = f'{chapter.name}_base'
@@ -104,7 +109,7 @@ def compileScripts(chapter: ChapterInfo):
 
     os.remove(statusFilename)
 
-    # - Copy the CompiledScriptsUpdate folder to the expected final build dir
+    # - Copy the CompiledUpdateScripts folder to the expected final build dir
     shutil.copytree(f'{baseFolderName}/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', f'temp/{chapter.dataFolderName}/StreamingAssets/CompiledUpdateScripts', dirs_exist_ok=True)
 
     # Clean up
@@ -180,20 +185,23 @@ def main():
 
 This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
-    help = """Usage:
-            deploy_higurashi.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)
-           """
+    argparser = argparse.ArgumentParser(usage='deploy_higurashi.py (onikakushi | watanagashi | tatarigoroshi | himatsubushi | meakashi | tsumihoroboshi | minagoroshi | matsuribayashi)',
+                                        description='This script creates the "script" archive used in the Higurashi mod. It expects to be run from one of the Higurashi mod repositories.')
 
-    # Enables the chapter name as an argument. Example: Himatsubushi
-    if len(argv) < 2:
-        raise SystemExit(help)
+    argparser.add_argument("chapter", help="The name of the chapter to be deployed.")
+    argparser.add_argument(
+        "--nocompile",
+        dest="noCompile",
+        action='store_true',
+        help='Skips the script compilation step (archive will not have a CompiledUpdateScripts folder)',
+    )
+
+    args = argparser.parse_args()
 
     # Get Git Tag Environment Variables
     GIT_REF = os.environ.get("GITHUB_REF",  "unknown/unknown/X.Y.Z")    # Github Tag / Version info
     GIT_TAG = GIT_REF.split('/')[-1]
-    print(f"--- Git Ref: {GIT_REF} Git Tag: {GIT_TAG} ---")
-
-    chapterName = argv[1]
+    print(f"--- Starting build for Git Ref: {GIT_REF} Git Tag: {GIT_TAG} ---")
 
     chapterList = [
         ChapterInfo("onikakushi",       1, "Onikakushi-UI_5.2.2f1_win.7z"),
@@ -208,13 +216,14 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
 
     chapterDict = dict((chapter.name, chapter) for chapter in chapterList)
 
-    if chapterName not in chapterDict:
-        raise SystemExit(f"Error: Invalid Chapter Selected\n\n{help}")
+    chapter = chapterDict.get(args.chapter)
 
-    chapter = chapterDict[chapterName]
+    if chapter is None:
+        raise SystemExit(f"Error: Unknown Chapter '{args.chapter}' Selected\n\n{help}")
 
     # Compile every chapter's scripts before building archives
-    compileScripts(chapter)
+    if not args.noCompile:
+        compileScripts(chapter)
 
     print(f">>> Creating folders and downloading necessary files")
     prepareFiles(chapter.name, chapter.dataFolderName)
