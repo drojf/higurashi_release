@@ -227,5 +227,8 @@ This script uses 3.8's 'dirs_exist_ok=True' argument for shutil.copy.""")
     print(f">>> Cleaning up the mess")
     shutil.rmtree('temp')
 
+    # Set a Github Actions output "release_name" for use by the release step
+    print(f'::set-output name=release_name::{chapter.name.capitalize()} Voice and Graphics Patch {GIT_TAG}')
+
 if __name__ == "__main__":
     main()

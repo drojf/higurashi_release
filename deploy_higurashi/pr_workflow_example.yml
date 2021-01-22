@@ -22,6 +22,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run Release Script
+        id: run_release
         env:
           EXTRACT_KEY: ${{ secrets.EXTRACT_KEY }}
         run: |
@@ -37,6 +38,7 @@ jobs:
           files: |
             output/*.zip
           draft: true
+          name: ${{ steps.run_release.outputs.release_name }} # This output is set in the 'deploy_higurashi.py' script above
           body: |
             > [PUT INSTALL REQUIREMENTS HERE]. We recommend using [our installer](https://github.com/07th-mod/python-patcher/releases/latest).
 
